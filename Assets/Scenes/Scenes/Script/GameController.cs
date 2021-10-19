@@ -1,19 +1,19 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class GameController : MonoBehaviour
 {
     public SlingShooter SlingShooter;
+    public TrailController TrailController;
     public List<Bird> Birds;
     public List<Enemy> Enemies;
-    public TrailController TrailController;
+    private Bird _shotBird;
     public BoxCollider2D TapCollider;
 
-    private Bird _shotBird;
     private bool _isGameEnded = false;
 
-    // Start is called before the first frame update
     void Start()
     {
         for (int i = 0; i < Birds.Count; i++)
@@ -21,39 +21,32 @@ public class GameController : MonoBehaviour
             Birds[i].OnBirdDestroyed += ChangeBird;
             Birds[i].OnBirdShot += AssignTrail;
         }
+
         for (int i = 0; i < Enemies.Count; i++)
         {
             Enemies[i].OnEnemyDestroyed += CheckGameEnd;
         }
+
         TapCollider.enabled = false;
         SlingShooter.InitiateBird(Birds[0]);
         _shotBird = Birds[0];
     }
 
-    public void AssignTrail(Bird bird)
-    {
-        TapCollider.enabled = true;
-        TrailController.SetBird(bird);
-        StartCoroutine(TrailController.SpawnTrail());
-    }
-
     public void ChangeBird()
     {
         TapCollider.enabled = false;
+
         if (_isGameEnded)
         {
             return;
         }
-        Birds.RemoveAt(0);
-        if (Birds.Count > 0)
-            SlingShooter.InitiateBird(Birds[0]);
-    }
 
-    void OnMouseUp()
-    {
-        if (_shotBird != null)
+        Birds.RemoveAt(0);
+
+        if (Birds.Count > 0)
         {
-            _shotBird.OnTap();
+            SlingShooter.InitiateBird(Birds[0]);
+            _shotBird = Birds[0];
         }
     }
 
@@ -67,9 +60,31 @@ public class GameController : MonoBehaviour
                 break;
             }
         }
+
+        if (Birds.Count == 0 && Enemies.Count > 0)
+        {
+            _isGameEnded = true;
+        }
+
         if (Enemies.Count == 0)
         {
             _isGameEnded = true;
+            SceneManager.LoadScene("Level 2");
+        }
+    }
+
+    public void AssignTrail(Bird bird)
+    {
+        TrailController.SetBird(bird);
+        StartCoroutine(TrailController.SpawnTrail());
+        TapCollider.enabled = true;
+    }
+
+    void OnMouseUp()
+    {
+        if (_shotBird != null)
+        {
+            _shotBird.OnTap();
         }
     }
 }

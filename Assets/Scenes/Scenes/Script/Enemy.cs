@@ -6,11 +6,12 @@ using UnityEngine.Events;
 public class Enemy : MonoBehaviour
 {
     public float Health = 50f;
+
     public UnityAction<GameObject> OnEnemyDestroyed = delegate { };
 
     private bool _isHit = false;
 
-    private void OnDestroy()
+    void OnDestroy()
     {
         if (_isHit)
         {
@@ -18,19 +19,19 @@ public class Enemy : MonoBehaviour
         }
     }
 
-    private void OnCollisionEnter2D(Collision2D collision)
+    void OnCollisionEnter2D(Collision2D col)
     {
-        if (collision.gameObject.GetComponent<Rigidbody2D>() == null) return;
+        if (col.gameObject.GetComponent<Rigidbody2D>() == null) return;
 
-        if (collision.gameObject.tag == "Bird")
+        if (col.gameObject.tag == "Bird")
         {
             _isHit = true;
             Destroy(gameObject);
         }
-        else if (collision.gameObject.tag == "Obstacle")
+        else if (col.gameObject.tag == "Obstacle")
         {
             //Hitung damage yang diperoleh
-            float damage = collision.gameObject.GetComponent<Rigidbody2D>().velocity.magnitude * 10;
+            float damage = col.gameObject.GetComponent<Rigidbody2D>().velocity.magnitude * 10;
             Health -= damage;
 
             if (Health <= 0)
